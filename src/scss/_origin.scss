@@ -29,6 +29,13 @@ $unit--h6: $unit--p;
 $breakpoint--mobile : 640;
 
 
+// Z-Indexes
+
+$z-index--main     : 1000;
+$z-index--overlay  : 4000;
+$z-index--nav      : 5000;
+
+
 // Colours
 
 $colour__white     : #fff;
