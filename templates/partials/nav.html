@@ -1,0 +1,22 @@
+
+    {{#nav}}
+    <nav class="nav" id="nav" role="navigation">
+        <h2 class="nav__title">Site Navigation</h2>
+        {{#nav__list}}
+        <ul class="nav__list">
+            {{#nav__item}}
+            <li class="nav__item {{class}}">
+                <a class="nav__link" href="{{url}}">{{name}}</a>
+            </li>
+            {{/nav__item}}
+        </ul>
+        {{/nav__list}}
+        <a class="nav-close" id="nav-close" href="#top">
+            <svg viewbox="0 0 35 35"><use xlink:href="#svg--close"></use></svg>
+            <span>Return to Top of Page</span>
+        </a>
+    </nav>
+    {{/nav}}
+    {{^nav}}
+    <!-- no #nav data -->
+    {{/nav}}

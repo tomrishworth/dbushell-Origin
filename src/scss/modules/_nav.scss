@@ -138,12 +138,6 @@ svg[aria-hidden="true"] {
     @include visually-hidden;
 }
 
-.no-js {
-    .nav {
-
-    }
-}
-
 .js {
     .nav {
         transition: transform 300ms ease;
