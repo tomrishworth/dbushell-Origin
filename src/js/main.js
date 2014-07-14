@@ -1,6 +1,6 @@
 /*!
  *
- *  Copyright (c) David Bushell | @dbushell | http://dbushell.com/
+ *  Copyright (c) David Bushell | http://dbushell.com/
  *
  */
 (function(window, document, undefined)
@@ -65,6 +65,20 @@
         };
 
 
+    var transformProp  = window.Modernizr.prefixed('transform'),
+        transitionProp = window.Modernizr.prefixed('transition'),
+        transitionEnd  = (function() {
+            var props = {
+                'WebkitTransition' : 'webkitTransitionEnd',
+                'MozTransition'    : 'transitionend',
+                'OTransition'      : 'oTransitionEnd otransitionend',
+                'msTransition'     : 'MSTransitionEnd',
+                'transition'       : 'transitionend'
+            };
+            return props.hasOwnProperty(transitionProp) ? props[transitionProp] : false;
+        })();
+
+
     var console = window.console;
     if (typeof console !== 'object' || !console.log)
     {
@@ -94,21 +108,33 @@
                 return;
             }
 
-            var nav_open = false;
+            app.initNavigation();
+
+            if (window.addEventListener) {
+                window.addEventListener('DOMContentLoaded', app.init, false);
+            } else if (window.attachEvent) {
+                window.attachEvent('onload', function(e) { app.init(); });
+            }
+        };
+
+        app.initNavigation = function()
+        {
+
+            app.isNavOpen = false;
 
             var $nav     = document.getElementById('nav'),
                 $overlay = document.getElementById('overlay');
 
             app.openNav = function()
             {
-                nav_open = true;
+                app.isNavOpen = true;
                 addClass($nav, 'nav--active');
                 addClass($overlay, 'overlay--active');
             };
 
             app.closeNav = function()
             {
-                nav_open = false;
+                app.isNavOpen = false;
                 removeClass($nav, 'nav--active');
                 removeClass($overlay, 'overlay--active');
             };
@@ -133,18 +159,12 @@
             {
                 if (e.which === 27) {
                     setTimeout(function() {
-                        if (nav_open) app.closeNav();
+                        if (app.isNavOpen) app.closeNav();
                     }, 50);
                 }
             }, false);
 
         };
-
-        if (window.addEventListener) {
-            window.addEventListener('DOMContentLoaded', app.init, false);
-        } else if (window.attachEvent) {
-            window.attachEvent('onload', function(e) { app.init(); });
-        }
 
         return app;
 
