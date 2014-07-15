@@ -2,31 +2,43 @@
 
 <main role="main" id="main">
 
+    <div class="block">
+
     <div class="fullscreen">
 
         <nav class="fullscreen__nav">
-            <a class="fullscreen__nav-link fullscreen__nav-link--active" href="#section-1" data-label="Section 1"><span>Section 1</span></a>
-            <a class="fullscreen__nav-link" href="#section-2" data-label="Section 2"><span>Section 2</span></a>
-            <a class="fullscreen__nav-link" href="#section-3" data-label="Section 3"><span>Section 3</span></a>
-            <a class="fullscreen__nav-link" href="#section-4" data-label="Section 4"><span>Section 4</span></a>
-            <a class="fullscreen__nav-link" href="#section-5" data-label="Section 5"><span>Section 5</span></a>
+            <a class="fullscreen__nav-link fullscreen__nav-link--active" data-section="1" data-label="Section 1" href="#section-1">
+                <span>Section 1</span>
+            </a>
+            <a class="fullscreen__nav-link" data-section="2" data-label="Section 2" href="#section-2">
+                <span>Section 2</span>
+            </a>
+            <a class="fullscreen__nav-link" data-section="3" data-label="Section 3" href="#section-3">
+                <span>Section 3</span>
+            </a>
+            <a class="fullscreen__nav-link" data-section="4" data-label="Section 4" href="#section-4">
+                <span>Section 4</span>
+            </a>
+            <a class="fullscreen__nav-link" data-section="5" data-label="Section 5" href="#section-5">
+                <span>Section 5</span>
+            </a>
         </nav>
 
-        <section class="fullscreen__section" id="section-1" style="background: #d8e6cf;">
+        <section class="fullscreen__section" id="section-1" style="background: #72BF8A;" data-reversed>
             <div class="block">
                 <h1>Section 1</h1>
             </div>
         </section>
         <!--/.fullscreen__section-->
 
-        <section class="fullscreen__section" id="section-2" style="background: #d8e2de;">
+        <section class="fullscreen__section" id="section-2" style="background: #72ADBF;" data-reversed>
             <div class="block">
                 <h1>Section 2</h1>
             </div>
         </section>
         <!--/.fullscreen__section-->
 
-        <section class="fullscreen__section" id="section-3" style="background: #ddd7de;">
+        <section class="fullscreen__section" id="section-3">
             <div class="block">
                 <h1>Section 3</h1>
             </div>
@@ -34,7 +46,7 @@
         <!--/.fullscreen__section-->
 
 
-        <section class="fullscreen__section" id="section-4" style="background: #e8d7dd;">
+        <section class="fullscreen__section" id="section-4" style="background: #B472BF;" data-reversed>
             <div class="block">
                 <h1>Section 4</h1>
             </div>
@@ -51,6 +63,8 @@
 
     </div>
     <!--/.fullscreen-->
+
+    </div>
 
 </main>
 

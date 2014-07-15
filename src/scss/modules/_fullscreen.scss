@@ -1,20 +1,21 @@
 
 $z-index--fullscreen : $z-index--main;
 
+$fullscreen--transition: 500ms;
+
 .fullscreen {
     z-index: $z-index--fullscreen;
-    position: absolute;
+    position: relative; //absolute;
     overflow: hidden;
     top: 0;
     width: 100%;
-    height: 100%;
-    transition: top 500ms ease-in;
+    height: 500px;//100%;
 }
 
 .fullscreen--disabled {
     position: relative;
-    overflow: visible;
-    min-height: 100vh;
+    overflow-y: auto;
+    // min-height: 100vh;
 }
 
 .fullscreen__nav {
@@ -26,7 +27,7 @@ $z-index--fullscreen : $z-index--main;
     transition: opacity 200ms ease;
     opacity: 1;
 
-    .fullscreen--disabled & {
+    .fullscreen--no-nav & {
         pointer-events: none;
         opacity: 0;
     }
@@ -41,7 +42,7 @@ $z-index--fullscreen : $z-index--main;
     border: 0;
     outline: 0;
     border-radius: 100%;
-    background-color: rgba($colour__hairline--dark, 1);
+    background-color: rgba($colour__slate, 0.5);
     transition: background-color 300ms ease;
 
     span {
@@ -53,18 +54,14 @@ $z-index--fullscreen : $z-index--main;
         content: attr(data-label);
         top: 50%;
         right: 100%;
-        margin-right: 0.5em;
+        margin-right: 0.7em;
         transform: translateY(-50%);
         font-size: em($unit--p--small);
-        color: $colour__text--light;
+        color: $colour__slate;
         line-height: 100%;
         white-space: nowrap;
         transition: opacity 150ms ease;
         opacity: 0;
-    }
-
-    span {
-
     }
 
     &:after {
@@ -75,12 +72,12 @@ $z-index--fullscreen : $z-index--main;
         width: 100%;
         height: 100%;
         border-radius: 100%;
-        border: em(2) solid rgba($colour__text--link, 0);
+        border: em(2) solid rgba($colour__slate, 0);
         transition: border-color 300ms ease;
     }
 
-    &:focus, &:hover {
-        background-color: $colour__text--link--hover;
+    &:hover {
+        background-color: rgba($colour__slate, 1);
 
         &:before {
             opacity: 1;
@@ -88,9 +85,32 @@ $z-index--fullscreen : $z-index--main;
     }
 
     &--active {
-        background-color: rgba($colour__hairline--dark, 0) !important;
+        background-color: rgba($colour__slate, 0) !important;
         &:after {
-            border-color: rgba($colour__text--link, 1);
+            border-color: rgba($colour__slate, 1);
+        }
+    }
+
+    .fullscreen__nav--reversed & {
+        background-color: rgba($colour__white, 0.5);
+
+        &:before {
+            color: $colour__white;
+        }
+
+        &:after {
+            border: em(2) solid rgba($colour__white, 0);
+        }
+
+        &:hover {
+            background-color: rgba($colour__white, 1);
+        }
+
+        &--active {
+            background-color: rgba($colour__white, 0) !important;
+            &:after {
+                border-color: rgba($colour__white, 1);
+            }
         }
     }
 }
@@ -100,7 +120,10 @@ $z-index--fullscreen : $z-index--main;
     overflow: hidden;
     width: 100%;
     height: 100%;
-    transition: height 500ms ease-in;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity $fullscreen--transition ease, transform $fullscreen--transition ease;
+    // transition: height 500ms ease-in;
     background: $colour__bg;
 
     @for $i from 1 through 10 {
@@ -110,12 +133,25 @@ $z-index--fullscreen : $z-index--main;
     }
 
     & > .block {
-        padding-top: em($unit--baseline * 4);
+        padding-top: em($unit--baseline * 2);
         padding-bottom: em($unit--baseline * 2);
     }
 }
 
 .fullscreen__section--inactive {
     z-index: 1;
-    height: 0;
+    // opacity: 0;
+    transform: translate3d(0, -100%, 0);
+}
+
+.fullscreen--height {
+    .fullscreen__section {
+        transform: none !important;
+        transition: height $fullscreen--transition ease;
+    }
+
+    .fullscreen__section--inactive {
+        opacity: 1;
+        height: 0;
+    }
 }

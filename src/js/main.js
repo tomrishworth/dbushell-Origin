@@ -219,8 +219,7 @@
         app.initFullscreen = function()
         {
 
-            var speed = 700,
-                delay = 150,
+            var speed = 500,
                 active = 0,
                 moving = false,
                 disabled = false;
@@ -236,7 +235,7 @@
 
             var drag_delta = 0,
                 drag_start = null,
-                drag_threshold = 50;
+                drag_threshold = 40;
 
             var $fullscreen = document.querySelector('.fullscreen'),
                 $nav        = $fullscreen.querySelector('.fullscreen__nav'),
@@ -266,24 +265,18 @@
                 }
                 setTimeout(function() {
                     moving = false;
-                }, speed + delay);
+                }, 1);
             };
 
             app.gotoScreen = function(index)
             {
-                wheel_delta = 0;
                 if (moving) {
                     return;
                 }
-                active = index;
-                moving = true;
-                if (transitionEnd) {
-                    addEvent($fullscreen, transitionEnd, onTransitionEnd, false);
+                if ($sections[index].hasAttribute('data-reversed')) {
+                    addClass($nav, 'fullscreen__nav--reversed');
                 } else {
-                    setTimeout(function()
-                    {
-                        onTransitionEnd();
-                    }, speed);
+                    removeClass($nav, 'fullscreen__nav--reversed');
                 }
                 for (var i = 0; i < $sections.length; i++) {
                     if (i < index) {
@@ -292,21 +285,38 @@
                         removeClass($sections[i], 'fullscreen__section--inactive');
                     }
                 }
+                if (active === index) {
+                    setTimeout(onTransitionEnd, 1);
+                } else {
+                    if (transitionEnd) {
+                        addEvent($fullscreen, transitionEnd, onTransitionEnd, false);
+                    } else {
+                        setTimeout(function() {
+                            onTransitionEnd();
+                        }, speed);
+                    }
+                }
+                active = index;
+                moving = true;
+
             };
 
-            app.prevScreen = function()
+            var prevScreen = function()
             {
                 if (active > 0) {
                     app.gotoScreen(active - 1);
                 }
             };
 
-            app.nextScreen = function()
+            var nextScreen = function()
             {
                 if (active < $sections.length - 1) {
                     app.gotoScreen(active + 1);
                 }
             };
+
+            app.prevScreen = _throttle(prevScreen, 1000, { trailing: false });
+            app.nextScreen = _throttle(nextScreen, 1000, { trailing: false });
 
             var onNavClick = function(e)
             {
@@ -314,8 +324,7 @@
                     return;
                 }
                 killEvent(e);
-                var index = parseInt(e.target.getAttribute('href').split('-')[1], 10);
-                app.gotoScreen(index - 1);
+                app.gotoScreen(parseInt(e.target.getAttribute('data-section'), 10) - 1);
             };
 
             var onScroll = function(e)
@@ -324,15 +333,31 @@
                 scroll_top[1] = window.pageYOffset || document.documentElement.scrollTop;
                 scroll_down  = scroll_top[1] > scroll_top[0];
                 scroll_delta = scroll_top[1] - scroll_top[0];
+
+                if (disabled && scroll_top[1] > 0) {
+                    addClass($fullscreen, 'fullscreen--no-nav');
+                } else {
+                    removeClass($fullscreen, 'fullscreen--no-nav');
+                }
             };
 
-            var onWheel = function(e)
+            var _onMouseWheel = _throttle(function(e)
+            {
+                if (wheel_delta === 1) {
+                    app.prevScreen();
+                    wheel_delta = 0;
+                } else if (wheel_delta === -1) {
+                    app.nextScreen();
+                    wheel_delta = 0;
+                }
+            }, 500, { leading: true, trailing: false });
+
+            var onMouseWheel = function(e)
             {
                 if (moving) {
                     killEvent(e);
                     return;
                 }
-
                 if (!disabled) {
                     killEvent(e);
                 } else {
@@ -340,18 +365,12 @@
                         return;
                     }
                 }
-
                 if (e.detail < 0 || e.wheelDelta > 0) {
-                    wheel_delta--;
-                    if (Math.abs(wheel_delta) >= wheel_threshold) {
-                        app.prevScreen();
-                    }
+                    wheel_delta = 1;
                 } else {
-                    wheel_delta++;
-                    if (wheel_delta >= wheel_threshold) {
-                        app.nextScreen();
-                    }
+                    wheel_delta = -1;
                 }
+                _onMouseWheel(e);
             };
 
             var onTouchStart = function(e)
@@ -407,9 +426,9 @@
             addEvent(window, 'scroll', _throttle(onScroll, 50), false);
 
             if ('onmousewheel' in window) {
-                addEvent($fullscreen, 'mousewheel', _throttle(onWheel, 150), false);
+                addEvent($fullscreen, 'mousewheel', onMouseWheel, false);
             } else {
-                addEvent($fullscreen, 'DOMMouseScroll', _throttle(onWheel, 150), false);
+                addEvent($fullscreen, 'DOMMouseScroll', onMouseWheel, false);
             }
 
             if ('ontouchstart' in window) {
@@ -420,6 +439,8 @@
             }
 
             addEvent($nav, 'click', onNavClick, false);
+
+            app.gotoScreen(0);
 
         };
 
