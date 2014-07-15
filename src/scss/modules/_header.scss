@@ -1,8 +1,12 @@
 
+// .body--header {
+//     padding-top: em($unit * 15);
+// }
+
 .header {
     z-index: $z-index--header;
     position: relative;
-    margin: em($unit--baseline) 0;
+    padding: em($unit--baseline) 0;
 
     .block__title {
         @include visually-hidden;
@@ -11,7 +15,10 @@
 
 .header--fixed {
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    background: rgba($colour__white, 0.8);
 }
 
 .footer {

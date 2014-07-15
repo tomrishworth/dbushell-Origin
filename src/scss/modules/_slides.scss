@@ -1,24 +1,76 @@
 
-$z-index--fullscreen : $z-index--main;
+$z-index--slides : $z-index--main;
 
-$fullscreen--transition: 500ms;
+$slides--transition: 500ms;
 
-.fullscreen {
-    z-index: $z-index--fullscreen;
-    position: relative; //absolute;
-    overflow: hidden;
-    top: 0;
-    width: 100%;
-    height: 500px;//100%;
-}
-
-.fullscreen--disabled {
+.slides {
+    z-index: $z-index--slides;
     position: relative;
-    overflow-y: auto;
-    // min-height: 100vh;
+    overflow: hidden;
+    width: 100%;
+    height: 500px;
 }
 
-.fullscreen__nav {
+.slides--fullscreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    min-height: 100vh;
+
+    &.slides--end {
+        position: relative;
+        overflow-y: visible;
+    }
+}
+
+.slides__section {
+    position: absolute;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity $slides--transition ease, transform $slides--transition ease;
+    // transition: height 500ms ease-in;
+    background: $colour__bg--light;
+
+    @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+            z-index: $z-index--slides + (10 - $i);
+        }
+    }
+
+    & > .block {
+        padding-top: em($unit--baseline * 2);
+        padding-bottom: em($unit--baseline * 2);
+
+        .slides--fullscreen & {
+
+            padding-top: em(($unit * 15) + $unit--baseline * 2);
+        }
+    }
+}
+
+.slides__section--inactive {
+    z-index: 1;
+    // opacity: 0;
+    transform: translate3d(0, -100%, 0);
+}
+
+// .slides--height {
+//     .slides__section {
+//         transform: none !important;
+//         transition: height $slides--transition ease;
+//     }
+
+//     .slides__section--inactive {
+//         opacity: 1;
+//         height: 0;
+//     }
+// }
+
+.slides__nav {
     z-index: $z-index--nav;
     position: absolute;
     top: 50%;
@@ -27,13 +79,13 @@ $fullscreen--transition: 500ms;
     transition: opacity 200ms ease;
     opacity: 1;
 
-    .fullscreen--no-nav & {
+    .slides--hide-nav & {
         pointer-events: none;
         opacity: 0;
     }
 }
 
-.fullscreen__nav-link {
+.slides__nav-link {
     display: block;
     position: relative;
     margin: em(12) 0;
@@ -91,7 +143,7 @@ $fullscreen--transition: 500ms;
         }
     }
 
-    .fullscreen__nav--reversed & {
+    .slides__nav--reversed & {
         background-color: rgba($colour__white, 0.5);
 
         &:before {
@@ -112,46 +164,5 @@ $fullscreen--transition: 500ms;
                 border-color: rgba($colour__white, 1);
             }
         }
-    }
-}
-
-.fullscreen__section {
-    position: absolute;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    transition: opacity $fullscreen--transition ease, transform $fullscreen--transition ease;
-    // transition: height 500ms ease-in;
-    background: $colour__bg;
-
-    @for $i from 1 through 10 {
-        &:nth-child(#{$i}) {
-            z-index: $z-index--fullscreen + (10 - $i);
-        }
-    }
-
-    & > .block {
-        padding-top: em($unit--baseline * 2);
-        padding-bottom: em($unit--baseline * 2);
-    }
-}
-
-.fullscreen__section--inactive {
-    z-index: 1;
-    // opacity: 0;
-    transform: translate3d(0, -100%, 0);
-}
-
-.fullscreen--height {
-    .fullscreen__section {
-        transform: none !important;
-        transition: height $fullscreen--transition ease;
-    }
-
-    .fullscreen__section--inactive {
-        opacity: 1;
-        height: 0;
     }
 }

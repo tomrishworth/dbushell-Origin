@@ -156,7 +156,7 @@
 
             app.initNavigation();
 
-            app.initFullscreen();
+            app.initSlides();
 
         };
 
@@ -216,170 +216,164 @@
         };
 
 
-        app.initFullscreen = function()
+        app.createSlides = function(el)
         {
-
-            var speed = 500,
-                active = 0,
-                moving = false,
-                disabled = false;
-
-            var wheel_delta     = 0,
-                wheel_threshold = 2;
-
-            var scroll_out,
-                scroll_delta,
-                scroll_dist = 0,
-                scroll_down = false,
-                scroll_top  = [0, 0];
-
-            var drag_delta = 0,
-                drag_start = null,
-                drag_threshold = 40;
-
-            var $fullscreen = document.querySelector('.fullscreen'),
-                $nav        = $fullscreen.querySelector('.fullscreen__nav'),
-                $links      = $fullscreen.querySelectorAll('.fullscreen__nav-link'),
-                $sections   = $fullscreen.querySelectorAll('.fullscreen__section');
+            var self = {
+                $el       : el,
+                _speed    : 500,
+                _active   : 0,
+                _moving   : false,
+                _ended    : false,
+                _wheel    : { delta: 0, threshold: 2 },
+                _scroll   : { delta: 0, dist: 0, down: false, top: [0, 0] },
+                _drag     : { delta: 0, start: null, threshold: 20 },
+                $nav      : el.getElementsByClassName('slides__nav')[0],
+                $navlinks : el.getElementsByClassName('slides__nav-link'),
+                $sections : el.getElementsByClassName('slides__section')
+            };
+            self._count = self.$sections.length;
+            self._fullscreen = hasClass(self.$el, 'slides--fullscreen');
 
             var onTransitionEnd = function(e)
             {
                 if (transitionEnd) {
-                    removeEvent($fullscreen, transitionEnd, onTransitionEnd, false);
+                    removeEvent(self.$el, transitionEnd, onTransitionEnd, false);
                 }
-                if (active === ($sections.length - 1)) {
-                    if (!disabled) {
-                        disabled = true;
-                        addClass($fullscreen, 'fullscreen--disabled');
+                if (self._active === (self._count - 1)) {
+                    if (!self._ended) {
+                        self._ended = true;
+                        addClass(self.$el, 'slides--end');
                     }
-                } else if (disabled) {
-                    disabled = false;
-                    removeClass($fullscreen, 'fullscreen--disabled');
+                } else if (self._ended) {
+                    self._ended = false;
+                    removeClass(self.$el, 'slides--end');
                 }
-                for (var i = 0; i < $links.length; i++) {
-                    if (i === active) {
-                        addClass($links[i], 'fullscreen__nav-link--active');
+                for (var i = 0; i < self.$navlinks.length; i++) {
+                    if (i === self._active) {
+                        addClass(self.$navlinks[i], 'slides__nav-link--active');
                     } else {
-                        removeClass($links[i], 'fullscreen__nav-link--active');
+                        removeClass(self.$navlinks[i], 'slides__nav-link--active');
                     }
                 }
                 setTimeout(function() {
-                    moving = false;
+                    self._moving = false;
                 }, 1);
             };
 
-            app.gotoScreen = function(index)
+            self.gotoScreen = function(index)
             {
-                if (moving) {
+                if (self._moving) {
                     return;
                 }
-                if ($sections[index].hasAttribute('data-reversed')) {
-                    addClass($nav, 'fullscreen__nav--reversed');
+                if (self.$sections[index].hasAttribute('data-reversed')) {
+                    addClass(self.$nav, 'slides__nav--reversed');
                 } else {
-                    removeClass($nav, 'fullscreen__nav--reversed');
+                    removeClass(self.$nav, 'slides__nav--reversed');
                 }
-                for (var i = 0; i < $sections.length; i++) {
+                for (var i = 0; i < self._count; i++) {
                     if (i < index) {
-                        addClass($sections[i], 'fullscreen__section--inactive');
+                        addClass(self.$sections[i], 'slides__section--inactive');
                     } else {
-                        removeClass($sections[i], 'fullscreen__section--inactive');
+                        removeClass(self.$sections[i], 'slides__section--inactive');
                     }
                 }
-                if (active === index) {
+                if (self._active === index) {
                     setTimeout(onTransitionEnd, 1);
                 } else {
                     if (transitionEnd) {
-                        addEvent($fullscreen, transitionEnd, onTransitionEnd, false);
+                        addEvent(self.$el, transitionEnd, onTransitionEnd, false);
                     } else {
                         setTimeout(function() {
                             onTransitionEnd();
-                        }, speed);
+                        }, self._speed);
                     }
                 }
-                active = index;
-                moving = true;
+                self._active = index;
+                self._moving = true;
 
             };
 
             var prevScreen = function()
             {
-                if (active > 0) {
-                    app.gotoScreen(active - 1);
+                if (self._active > 0) {
+                    self.gotoScreen(self._active - 1);
                 }
             };
 
             var nextScreen = function()
             {
-                if (active < $sections.length - 1) {
-                    app.gotoScreen(active + 1);
+                if (self._active < self._count - 1) {
+                    self.gotoScreen(self._active + 1);
                 }
             };
 
-            app.prevScreen = _throttle(prevScreen, 1000, { trailing: false });
-            app.nextScreen = _throttle(nextScreen, 1000, { trailing: false });
+            self.prevScreen = _throttle(prevScreen, 1000, { trailing: false });
+            self.nextScreen = _throttle(nextScreen, 1000, { trailing: false });
 
             var onNavClick = function(e)
             {
-                if (!hasClass(e.target, 'fullscreen__nav-link')) {
+                if (!hasClass(e.target, 'slides__nav-link')) {
                     return;
                 }
                 killEvent(e);
-                app.gotoScreen(parseInt(e.target.getAttribute('data-section'), 10) - 1);
+                self.gotoScreen(parseInt(e.target.getAttribute('data-section'), 10) - 1);
             };
 
             var onScroll = function(e)
             {
-                scroll_top[0] = scroll_top[1];
-                scroll_top[1] = window.pageYOffset || document.documentElement.scrollTop;
-                scroll_down  = scroll_top[1] > scroll_top[0];
-                scroll_delta = scroll_top[1] - scroll_top[0];
+                self._scroll.top[0] = self._scroll.top[1];
+                self._scroll.top[1] = window.pageYOffset || document.documentElement.scrollTop;
+                self._scroll.down  = self._scroll.top[1] > self._scroll.top[0];
+                self._scroll.delta = self._scroll.top[1] - self._scroll.top[0];
 
-                if (disabled && scroll_top[1] > 0) {
-                    addClass($fullscreen, 'fullscreen--no-nav');
-                } else {
-                    removeClass($fullscreen, 'fullscreen--no-nav');
+                if (self._fullscreen) {
+                    if (self._ended && self._scroll.top[1] > 0) {
+                        addClass(self.$el, 'slides--hide-nav');
+                    } else {
+                        removeClass(self.$el, 'slides--hide-nav');
+                    }
                 }
             };
 
             var _onMouseWheel = _throttle(function(e)
             {
-                if (wheel_delta === 1) {
-                    app.prevScreen();
-                    wheel_delta = 0;
-                } else if (wheel_delta === -1) {
-                    app.nextScreen();
-                    wheel_delta = 0;
+                if (self._wheel.delta === 1) {
+                    self.prevScreen();
+                    self._wheel.delta = 0;
+                } else if (self._wheel.delta === -1) {
+                    self.nextScreen();
+                    self._wheel.delta = 0;
                 }
             }, 500, { leading: true, trailing: false });
 
             var onMouseWheel = function(e)
             {
-                if (moving) {
+                if (self._moving) {
                     killEvent(e);
                     return;
                 }
-                if (!disabled) {
+                if (!self._ended) {
                     killEvent(e);
-                } else {
-                    if (scroll_down || scroll_top[1] > 0) {
+                } else if (self._fullscreen) {
+                    if (self._scroll.down || self._scroll.top[1] > 0) {
                         return;
                     }
                 }
                 if (e.detail < 0 || e.wheelDelta > 0) {
-                    wheel_delta = 1;
+                    self._wheel.delta = 1;
                 } else {
-                    wheel_delta = -1;
+                    self._wheel.delta = -1;
                 }
                 _onMouseWheel(e);
             };
 
             var onTouchStart = function(e)
             {
-                if (hasClass(e.target, 'fullscreen__nav-link')) {
+                if (hasClass(e.target, 'slides__nav-link')) {
                     onNavClick(e);
                     return;
                 }
-                if (drag_start !== null) {
+                if (self._drag.start !== null) {
                     return;
                 }
                 if (e.touches) {
@@ -388,62 +382,81 @@
                     }
                     e = e.touches[0];
                 }
-                drag_start = e.clientY;
+                self._drag.start = e.clientY;
             };
 
             var onTouchMove = function(e)
             {
-                if (drag_start === null) {
+                if (self._drag.start === null) {
                     return;
                 }
-                if (!disabled) {
+                if (!self._ended) {
                     killEvent(e);
                 } else {
-                    if (scroll_down || scroll_top[1] > 0) {
-                        return;
+                    if (self._fullscreen) {
+                        if (self._scroll.down || self._scroll.top[1] > 0) {
+                            return;
+                        }
                     }
                 }
                 if (e.touches) {
                     e = e.touches[0];
                 }
-                drag_delta = drag_start - e.clientY;
+                self._drag.delta = self._drag.start - e.clientY;
             };
 
             var onTouchEnd = function(e)
             {
-                if (drag_start === null) {
+                if (self._drag.start === null) {
                     return;
                 }
-                if (drag_delta >= drag_threshold) {
-                    app.nextScreen();
-                } else if (Math.abs(drag_delta) >= drag_threshold) {
-                    app.prevScreen();
+                if (self._drag.delta >= self._drag.threshold) {
+                    self.nextScreen();
+                } else if (Math.abs(self._drag.delta) >= self._drag.threshold) {
+                    self.prevScreen();
                 }
-                drag_start = null;
-                drag_delta = 0;
+                self._drag.start = null;
+                self._drag.delta = 0;
             };
 
-            addEvent(window, 'scroll', _throttle(onScroll, 50), false);
-
-            if ('onmousewheel' in window) {
-                addEvent($fullscreen, 'mousewheel', onMouseWheel, false);
-            } else {
-                addEvent($fullscreen, 'DOMMouseScroll', onMouseWheel, false);
+            if (hasClass(self.$el, 'slides--scroll'))
+            {
+                if ('onmousewheel' in window) {
+                    addEvent(self.$el, 'mousewheel', onMouseWheel, false);
+                } else {
+                    addEvent(self.$el, 'DOMMouseScroll', onMouseWheel, false);
+                }
             }
 
-            if ('ontouchstart' in window) {
-                addEvent($fullscreen, 'touchstart', onTouchStart, false);
-                addEvent($fullscreen, 'touchmove', onTouchMove, false);
-                addEvent($fullscreen, 'touchend', onTouchEnd, false);
-                addEvent($fullscreen, 'touchcancel', onTouchEnd, false);
+            if (hasClass(self.$el, 'slides--touch'))
+            {
+                if ('ontouchstart' in window) {
+                    addEvent(self.$el, 'touchstart', onTouchStart, false);
+                    addEvent(self.$el, 'touchmove', onTouchMove, false);
+                    addEvent(self.$el, 'touchend', onTouchEnd, false);
+                    addEvent(self.$el, 'touchcancel', onTouchEnd, false);
+                }
             }
 
-            addEvent($nav, 'click', onNavClick, false);
+            addEvent(window, 'resize', _throttle(onScroll, 100, { leading: false, trailing: true }), false);
+            addEvent(window, 'orientationchange', _throttle(onScroll, 100, { leading: false, trailing: true }), false);
+            addEvent(window, 'scroll', onScroll, false);
 
-            app.gotoScreen(0);
+            addEvent(self.$nav, 'click', onNavClick, false);
 
+            self.gotoScreen(0);
+
+            return self;
         };
 
+        app.initSlides = function()
+        {
+            app._slides = [];
+            var el = $docEl.getElementsByClassName('slides');
+            for (var i = 0; i < el.length; i++) {
+                app._slides.push(app.createSlides(el[i]));
+            }
+        };
 
         return app;
 

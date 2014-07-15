@@ -14,7 +14,8 @@
             "nav__item": [
                 { "name": "Home", "url": "index.html" },
                 { "name": "Origin", "url": "origin/index.html" },
-                { "name": "Fullscreen", "url": "origin/fullscreen.html" }
+                { "name": "Slides", "url": "origin/slides.html" },
+                { "name": "Slides (fullscreen)", "url": "origin/slides-fullscreen.html" }
             ]
         }
     }
