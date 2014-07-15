@@ -1,0 +1,121 @@
+
+$z-index--fullscreen : $z-index--main;
+
+.fullscreen {
+    z-index: $z-index--fullscreen;
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transition: top 500ms ease-in;
+}
+
+.fullscreen--disabled {
+    position: relative;
+    overflow: visible;
+    min-height: 100vh;
+}
+
+.fullscreen__nav {
+    z-index: $z-index--nav;
+    position: absolute;
+    top: 50%;
+    right: em($unit--gutter);
+    transform: translateY(-50%);
+    transition: opacity 200ms ease;
+    opacity: 1;
+
+    .fullscreen--disabled & {
+        pointer-events: none;
+        opacity: 0;
+    }
+}
+
+.fullscreen__nav-link {
+    display: block;
+    position: relative;
+    margin: em(12) 0;
+    width: em(8);
+    height: em(8);
+    border: 0;
+    outline: 0;
+    border-radius: 100%;
+    background-color: rgba($colour__hairline--dark, 1);
+    transition: background-color 300ms ease;
+
+    span {
+        @include visually-hidden;
+    }
+
+    &:before {
+        position: absolute;
+        content: attr(data-label);
+        top: 50%;
+        right: 100%;
+        margin-right: 0.5em;
+        transform: translateY(-50%);
+        font-size: em($unit--p--small);
+        color: $colour__text--light;
+        line-height: 100%;
+        white-space: nowrap;
+        transition: opacity 150ms ease;
+        opacity: 0;
+    }
+
+    span {
+
+    }
+
+    &:after {
+        position: absolute;
+        content: "";
+        top: em(-2);
+        left: em(-2);
+        width: 100%;
+        height: 100%;
+        border-radius: 100%;
+        border: em(2) solid rgba($colour__text--link, 0);
+        transition: border-color 300ms ease;
+    }
+
+    &:focus, &:hover {
+        background-color: $colour__text--link--hover;
+
+        &:before {
+            opacity: 1;
+        }
+    }
+
+    &--active {
+        background-color: rgba($colour__hairline--dark, 0) !important;
+        &:after {
+            border-color: rgba($colour__text--link, 1);
+        }
+    }
+}
+
+.fullscreen__section {
+    position: absolute;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    transition: height 500ms ease-in;
+    background: $colour__bg;
+
+    @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+            z-index: $z-index--fullscreen + (10 - $i);
+        }
+    }
+
+    & > .block {
+        padding-top: em($unit--baseline * 4);
+        padding-bottom: em($unit--baseline * 2);
+    }
+}
+
+.fullscreen__section--inactive {
+    z-index: 1;
+    height: 0;
+}

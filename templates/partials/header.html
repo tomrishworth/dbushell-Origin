@@ -8,15 +8,14 @@
     </symbol>
 </svg>
 
-<header class="header" id="top" role="banner">
+<header class="header {{ header_class }}" id="top" role="banner">
     <div class="block">
         <h1 class="block__title">Origin</h1>
         <a class="nav-open" id="nav-open" href="#nav">
             <svg><use xlink:href="#svg--nav" /></svg>
             <span>Menu</span>
         </a>
-
-{{>nav}}
-
     </div>
 </header>
+
+{{>nav}}

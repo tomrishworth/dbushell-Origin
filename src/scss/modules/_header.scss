@@ -1,8 +1,19 @@
 
 .header {
+    z-index: $z-index--header;
+    position: relative;
     margin: em($unit--baseline) 0;
 
     .block__title {
         @include visually-hidden;
     }
+}
+
+.header--fixed {
+    position: fixed;
+    width: 100%;
+}
+
+.footer {
+    padding: em($unit--baseline) 0;
 }

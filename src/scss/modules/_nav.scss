@@ -1,9 +1,4 @@
 
-.no-inlinesvg svg,
-svg[aria-hidden="true"] {
-    @include hidden;
-}
-
 .overlay {
     z-index: $z-index--overlay;
     position: absolute;
