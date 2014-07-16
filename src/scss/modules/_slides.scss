@@ -1,7 +1,8 @@
 
 $z-index--slides : $z-index--main;
 
-$slides--transition: 500ms;
+$slides--transition : 500ms;
+$slides--easing     : cubic-bezier(.7,.5,.7,.9);
 
 .slides {
     z-index: $z-index--slides;
@@ -30,10 +31,8 @@ $slides--transition: 500ms;
     top: 0;
     width: 100%;
     height: 100%;
-    opacity: 1;
     transform: translate3d(0, 0, 0);
-    transition: opacity $slides--transition ease, transform $slides--transition ease;
-    // transition: height 500ms ease-in;
+    transition: transform $slides--transition $slides--easing;
     background: $colour__bg--light;
 
     @for $i from 1 through 10 {
@@ -54,7 +53,6 @@ $slides--transition: 500ms;
 
 .slides__section--inactive {
     z-index: 1;
-    // opacity: 0;
     transform: translate3d(0, -100%, 0);
 
     .no-csstransforms3d & {
@@ -70,11 +68,10 @@ $slides--transition: 500ms;
         background-position: center center;
         background-attachment: local;
         transform: none !important;
-        transition: height $slides--transition ease;
+        transition: height $slides--transition $slides--easing;
     }
 
     .slides__section--inactive {
-        opacity: 1;
         height: 0;
     }
 }
