@@ -107,6 +107,22 @@ canvas {
     }
 }
 
+.main {
+    padding: em($unit--baseline) 0;
+}
+
+.main--header-fixed {
+    padding-top: em(($unit * 11) + $unit--baseline);
+}
+
+.main--no-padding {
+    padding: 0;
+}
+
+.footer {
+    padding: em($unit--baseline) 0;
+}
+
 // test page only
 
 .block--origin {

@@ -6,11 +6,20 @@
 .header {
     z-index: $z-index--header;
     position: relative;
-    padding: em($unit--baseline) 0;
+    padding: em($unit * 2) 0;
 
-    .block__title {
-        @include visually-hidden;
+    .block {
+        padding: 0 em($unit * 5);
+        max-width: none;
     }
+}
+
+.header__title {
+    @include font-size($unit--h4, $unit * 7);
+    color: $colour__text--light;
+    letter-spacing: 0;
+    float: right;
+    margin: 0;
 }
 
 .header--fixed {
@@ -18,9 +27,17 @@
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba($colour__white, 0.8);
+    transition: opacity 150ms ease, background-color 150ms ease, transform 150ms ease;
+    background-color: rgba($colour__white, 0);
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
 }
 
-.footer {
-    padding: em($unit--baseline) 0;
+.header--active {
+    background-color: rgba($colour__white, 0.8);
+}
+
+.header--inactive {
+    transform: translate3d(0, -100%, 0);
+    opacity: 0;
 }

@@ -1,7 +1,7 @@
 {
     "title": "dbushell-Origin: Slides (fullscreen)",
 
-    "body_class": "body--header",
-    "header_class": "header--fixed"
+    "header_class": "header header--fixed",
+    "main_class": "main main--no-padding"
 
 }

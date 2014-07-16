@@ -15,8 +15,12 @@
                 { "name": "Home", "url": "index.html" },
                 { "name": "Origin", "url": "origin/index.html" },
                 { "name": "Slides", "url": "origin/slides.html" },
-                { "name": "Slides (fullscreen)", "url": "origin/slides-fullscreen.html" }
+                { "name": "Slides (fullscreen)", "url": "origin/slides-fullscreen.html" },
+                { "name": "Header (fixed)", "url": "origin/header.html" }
             ]
         }
-    }
+    },
+
+    "header_class": "header",
+    "main_class": "main"
 }

@@ -190,6 +190,8 @@
 
             app.initNavigation();
 
+            app.initHeader();
+
             app.initSlides();
 
         };
@@ -247,6 +249,55 @@
                 }
             }, false);
 
+        };
+
+
+        app.initHeader = function()
+        {
+            var scroll = { delta: 0, dist: 0, down: false, top: [0, 0] },
+                $header = document.getElementById('top'),
+                header_height = 0;
+
+            var onScroll = function(e)
+            {
+                scroll.top[0] = scroll.top[1];
+                scroll.top[1] = window.pageYOffset || document.documentElement.scrollTop;
+
+                scroll.down  = scroll.top[1] > scroll.top[0];
+                scroll.delta = scroll.top[1] - scroll.top[0];
+
+                if (scroll.top[1] > header_height) {
+                    if (scroll.down) {
+                        scroll.dist = 0;
+                        addClass($header, 'header--active');
+                        addClass($header, 'header--inactive');
+                    } else {
+                        scroll.dist += scroll.delta;
+                        if (scroll.dist < -10) {
+                            removeClass($header, 'header--inactive');
+                        }
+                    }
+                } else {
+                    removeClass($header, 'header--active');
+                    removeClass($header, 'header--inactive');
+                }
+
+                clearTimeout(scroll.out);
+                if (e) {
+                    scroll.out = setTimeout(function() {
+                        if ((window.pageYOffset || document.documentElement.scrollTop) <= 0) {
+                            removeClass($header, 'header--active');
+                            removeClass($header, 'header--inactive');
+                        }
+                    }, 300);
+                }
+            };
+
+            var _onScroll = _throttle(onScroll, 100);
+
+            addEvent(window, 'scroll', _onScroll, false);
+            addEvent(window, 'resize', _onScroll, false);
+            addEvent(window, 'orientationchange', _onScroll, false);
         };
 
 
@@ -373,14 +424,13 @@
 
             var _onMouseWheel = function()
             {
-                self._last = self._wheel.delta;
                 if (self._wheel.delta === 1) {
                     self.prevScreen();
-                    self._wheel.delta = 0;
                 } else if (self._wheel.delta === -1) {
                     self.nextScreen();
-                    self._wheel.delta = 0;
                 }
+                self._last = self._wheel.delta;
+                self._wheel.delta = 0;
             };
 
             var _onMouseWheelDelayed = _debounce(function() {
@@ -389,22 +439,17 @@
 
             var onMouseWheel = function(e)
             {
+                var wheel_delta = (e.detail < 0 || e.wheelDelta > 0) ? 1 : -1;
+                if (self._fullscreen && self._ended) {
+                    if (wheel_delta < 0 || self._scroll.top[1] > 0) {
+                        return;
+                    }
+                }
                 if (self._moving) {
                     killEvent(e);
                     return;
                 }
-                if (!self._ended) {
-                    killEvent(e);
-                } else if (self._fullscreen) {
-                    if (self._scroll.down || self._scroll.top[1] > 0) {
-                        return;
-                    }
-                }
-                if (e.detail < 0 || e.wheelDelta > 0) {
-                    self._wheel.delta = 1;
-                } else {
-                    self._wheel.delta = -1;
-                }
+                self._wheel.delta = wheel_delta;
                 if (self._wheel.delta === self._last) {
                     killEvent(e);
                     _onMouseWheelDelayed(e);
