@@ -5,7 +5,6 @@
  */
 (function(window, document, undefined)
 {
-
     var hasEventListeners = !!window.addEventListener,
 
         addEvent = function(el, e, callback, capture)
@@ -87,78 +86,6 @@
         })();
 
 
-    // https://github.com/jashkenas/underscore/blob/master/underscore.js
-
-    var _now = Date.now || function() { return new Date().getTime(); };
-
-    var _throttle = function(func, wait, options)
-    {
-        var context, args, result;
-        var timeout = null;
-        var previous = 0;
-        if (typeof options !== 'object') {
-            options = { };
-        }
-        var later = function() {
-          previous = options.leading === false ? 0 : _now();
-          timeout = null;
-          result = func.apply(context, args);
-          context = args = null;
-        };
-        return function() {
-          var now = _now();
-          if (!previous && options.leading === false) previous = now;
-          var remaining = wait - (now - previous);
-          context = this;
-          args = arguments;
-          if (remaining <= 0 || remaining > wait) {
-            clearTimeout(timeout);
-            timeout = null;
-            previous = now;
-            result = func.apply(context, args);
-            context = args = null;
-          } else if (!timeout && options.trailing !== false) {
-            timeout = setTimeout(later, remaining);
-          }
-          return result;
-        };
-    };
-
-    var _debounce = function(func, wait, immediate)
-    {
-        var timeout, args, context, timestamp, result;
-
-        var later = function() {
-          var last = _now() - timestamp;
-          if (last < wait) {
-            timeout = setTimeout(later, wait - last);
-          } else {
-            timeout = null;
-            if (!immediate) {
-              result = func.apply(context, args);
-              context = args = null;
-            }
-          }
-        };
-
-    return function() {
-      context = this;
-      args = arguments;
-      timestamp = _now();
-      var callNow = immediate && !timeout;
-      if (!timeout) {
-        timeout = setTimeout(later, wait);
-      }
-      if (callNow) {
-        result = func.apply(context, args);
-        context = args = null;
-      }
-
-      return result;
-    };
-  };
-
-
     var console = window.console;
     if (typeof console !== 'object' || !console.log)
     {
@@ -207,37 +134,27 @@
 
             app.isNavOpen = false;
 
-            var $nav     = document.getElementById('nav'),
+            var $nav = document.getElementById('nav'),
                 $overlay = document.getElementById('overlay');
 
-            app.openNav = function()
+            app.openNav = function(e)
             {
+                if (e) killEvent(e);
                 app.isNavOpen = true;
                 addClass($nav, 'nav--active');
                 addClass($overlay, 'overlay--active');
             };
 
-            app.closeNav = function()
+            app.closeNav = function(e)
             {
+                if (e) killEvent(e);
                 app.isNavOpen = false;
                 removeClass($nav, 'nav--active');
                 removeClass($overlay, 'overlay--active');
             };
 
-            addEvent(document.getElementById('nav-open'), 'click', function(e)
-            {
-                killEvent(e);
-                app.openNav();
-            },
-            false);
-
-            addEvent(document.getElementById('nav-close'), 'click', function(e)
-            {
-                killEvent(e);
-                app.closeNav();
-            },
-            false);
-
+            addEvent(document.getElementById('nav-open'), 'click', app.openNav, false);
+            addEvent(document.getElementById('nav-close'), 'click', app.closeNav, false);
             addEvent(document.getElementById('overlay'), 'click', app.closeNav, false);
 
             addEvent(window, 'keydown', function(e)
@@ -255,8 +172,14 @@
         app.initHeader = function()
         {
             var scroll = { delta: 0, dist: 0, down: false, top: [0, 0] },
-                $header = document.getElementById('top'),
+                $header = document.querySelector('.header--fixed'),
                 header_height = 0;
+
+            if (!$header) {
+                return;
+            }
+
+            app.$header = $header;
 
             var onScroll = function(e)
             {
@@ -293,7 +216,7 @@
                 }
             };
 
-            var _onScroll = _throttle(onScroll, 100);
+            var _onScroll = _.throttle(onScroll, 50);
 
             addEvent(window, 'scroll', _onScroll, false);
             addEvent(window, 'resize', _onScroll, false);
@@ -335,13 +258,14 @@
                     self._ended = false;
                     removeClass(self.$el, 'slides--end');
                 }
-                for (var i = 0; i < self.$navlinks.length; i++) {
+                _.each(self.$navlinks, function(el, i)
+                {
                     if (i === self._active) {
-                        addClass(self.$navlinks[i], 'slides__nav-link--active');
+                        addClass(el, 'slides__nav-link--active');
                     } else {
-                        removeClass(self.$navlinks[i], 'slides__nav-link--active');
+                        removeClass(el, 'slides__nav-link--active');
                     }
-                }
+                });
                 setTimeout(function() {
                     self._moving = false;
                 }, self._limit - self._speed);
@@ -354,16 +278,23 @@
                 }
                 if (self.$sections[index].hasAttribute('data-reversed')) {
                     addClass(self.$nav, 'slides__nav--reversed');
+                    if (app.$header) {
+                        addClass(app.$header, 'header--reversed');
+                    }
                 } else {
                     removeClass(self.$nav, 'slides__nav--reversed');
-                }
-                for (var i = 0; i < self._count; i++) {
-                    if (i < index) {
-                        addClass(self.$sections[i], 'slides__section--inactive');
-                    } else {
-                        removeClass(self.$sections[i], 'slides__section--inactive');
+                    if (app.$header) {
+                        removeClass(app.$header, 'header--reversed');
                     }
                 }
+                _.each(self.$sections, function(el, i)
+                {
+                    if (i < index) {
+                        addClass(el, 'slides__section--inactive');
+                    } else {
+                        removeClass(el, 'slides__section--inactive');
+                    }
+                });
                 if (self._active === index) {
                     setTimeout(onTransitionEnd, 1);
                 } else {
@@ -394,8 +325,8 @@
                 }
             };
 
-            self.prevScreen = _throttle(prevScreen, self._limit, { trailing: false });
-            self.nextScreen = _throttle(nextScreen, self._limit, { trailing: false });
+            self.prevScreen = _.throttle(prevScreen, self._limit, { trailing: false });
+            self.nextScreen = _.throttle(nextScreen, self._limit, { trailing: false });
 
             var onNavClick = function(e)
             {
@@ -433,12 +364,14 @@
                 self._wheel.delta = 0;
             };
 
-            var _onMouseWheelDelayed = _debounce(function() {
+            var _onMouseWheelDelayed = _.debounce(function() {
                 self._last = 0;
             }, 50);
 
             var onMouseWheel = function(e)
             {
+                if (app.isNavOpen) return;
+
                 var wheel_delta = (e.detail < 0 || e.wheelDelta > 0) ? 1 : -1;
                 if (self._fullscreen && self._ended) {
                     if (wheel_delta < 0 || self._scroll.top[1] > 0) {
@@ -460,6 +393,8 @@
 
             var onTouchStart = function(e)
             {
+                if (app.isNavOpen) return;
+
                 if (hasClass(e.target, 'slides__nav-link')) {
                     onNavClick(e);
                     return;
@@ -529,8 +464,8 @@
                 }
             }
 
-            addEvent(window, 'resize', _throttle(onScroll, 100, { leading: false, trailing: true }), false);
-            addEvent(window, 'orientationchange', _throttle(onScroll, 100, { leading: false, trailing: true }), false);
+            addEvent(window, 'resize', _.throttle(onScroll, 100, { leading: false, trailing: true }), false);
+            addEvent(window, 'orientationchange', _.throttle(onScroll, 100, { leading: false, trailing: true }), false);
             addEvent(window, 'scroll', onScroll, false);
 
             addEvent(self.$nav, 'click', onNavClick, false);
@@ -543,10 +478,10 @@
         app.initSlides = function()
         {
             app._slides = [];
-            var el = $docEl.getElementsByClassName('slides');
-            for (var i = 0; i < el.length; i++) {
-                app._slides.push(app.createSlides(el[i]));
-            }
+            var els = $docEl.getElementsByClassName('slides');
+            _.each(els, function(el, i) {
+                app._slides.push(app.createSlides(el));
+            });
         };
 
         return app;
