@@ -124,6 +124,40 @@
         };
     };
 
+    var _debounce = function(func, wait, immediate)
+    {
+        var timeout, args, context, timestamp, result;
+
+        var later = function() {
+          var last = _now() - timestamp;
+          if (last < wait) {
+            timeout = setTimeout(later, wait - last);
+          } else {
+            timeout = null;
+            if (!immediate) {
+              result = func.apply(context, args);
+              context = args = null;
+            }
+          }
+        };
+
+    return function() {
+      context = this;
+      args = arguments;
+      timestamp = _now();
+      var callNow = immediate && !timeout;
+      if (!timeout) {
+        timeout = setTimeout(later, wait);
+      }
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
+      return result;
+    };
+  };
+
 
     var console = window.console;
     if (typeof console !== 'object' || !console.log)
@@ -221,6 +255,8 @@
             var self = {
                 $el       : el,
                 _speed    : 500,
+                _limit    : 800,
+                _last     : 0,
                 _active   : 0,
                 _moving   : false,
                 _ended    : false,
@@ -257,7 +293,7 @@
                 }
                 setTimeout(function() {
                     self._moving = false;
-                }, 1);
+                }, self._limit - self._speed);
             };
 
             self.gotoScreen = function(index)
@@ -307,8 +343,8 @@
                 }
             };
 
-            self.prevScreen = _throttle(prevScreen, 1000, { trailing: false });
-            self.nextScreen = _throttle(nextScreen, 1000, { trailing: false });
+            self.prevScreen = _throttle(prevScreen, self._limit, { trailing: false });
+            self.nextScreen = _throttle(nextScreen, self._limit, { trailing: false });
 
             var onNavClick = function(e)
             {
@@ -335,8 +371,9 @@
                 }
             };
 
-            var _onMouseWheel = _throttle(function(e)
+            var _onMouseWheel = function()
             {
+                self._last = self._wheel.delta;
                 if (self._wheel.delta === 1) {
                     self.prevScreen();
                     self._wheel.delta = 0;
@@ -344,7 +381,11 @@
                     self.nextScreen();
                     self._wheel.delta = 0;
                 }
-            }, 500, { leading: true, trailing: false });
+            };
+
+            var _onMouseWheelDelayed = _debounce(function() {
+                self._last = 0;
+            }, 50);
 
             var onMouseWheel = function(e)
             {
@@ -364,7 +405,12 @@
                 } else {
                     self._wheel.delta = -1;
                 }
-                _onMouseWheel(e);
+                if (self._wheel.delta === self._last) {
+                    killEvent(e);
+                    _onMouseWheelDelayed(e);
+                } else {
+                    _onMouseWheel(e);
+                }
             };
 
             var onTouchStart = function(e)
@@ -422,9 +468,9 @@
             if (hasClass(self.$el, 'slides--scroll'))
             {
                 if ('onmousewheel' in window) {
-                    addEvent(self.$el, 'mousewheel', onMouseWheel, false);
+                    addEvent(self._fullscreen ? window : self.$el, 'mousewheel', onMouseWheel, false);
                 } else {
-                    addEvent(self.$el, 'DOMMouseScroll', onMouseWheel, false);
+                    addEvent(self._fullscreen ? window : self.$el, 'DOMMouseScroll', onMouseWheel, false);
                 }
             }
 
