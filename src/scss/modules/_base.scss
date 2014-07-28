@@ -102,7 +102,7 @@ canvas {
         padding: 0 em($unit--gutter);
     }
 
-    .lt-ie8 {
+    .lt-ie8 & {
         width: em(900);
     }
 }
